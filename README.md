@@ -11,7 +11,7 @@ Deploy your container imagem in simple way with tekton.
 
 ## License
 
-Copyright 2020 João Pedro Poloni Ponce
+Copyright 2022 João Pedro Poloni Ponce
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
