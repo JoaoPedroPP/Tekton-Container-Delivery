@@ -1,0 +1,74 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: app-event-listener
+spec:
+  serviceAccountName: tekton-triggers-example-sa
+  triggers:
+    - triggerRef: github-listener
+  resources:
+    kubernetesResource:
+      serviceType: NodePort
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: github-listener
+spec:
+  interceptors:
+    - ref:
+        name: "github"
+      params:
+        - name: "eventTypes"
+          value: ["push", "pull_request"]
+    - ref:
+        name: "cel"
+      params:
+        - name: "filter"
+          value: body.ref == 'refs/heads/main'
+  bindings:
+    - ref: github-binding
+  template:
+    ref: trigger-demo-template
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-binding
+spec:
+  params:
+    - name: gitRepository
+      value: $(body.repository.html_url)
+    - name: commits
+      value: $(body.commits)
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: trigger-demo-template
+  annotations:
+    triggers.tekton.dev/old-escape-quotes: "true"
+spec:
+  params:
+    - name: commits
+      description: The commits which got pushed
+    - name: gitRepository
+      description: The git repository that hosts context
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: pipelie-run-
+        annotations:
+          tekton.dev/gitURL: "$(tt.params.gitRepository)"
+      spec:
+        serviceAccountName: app-account
+        pipelineRef:
+          name: pipeline
+        params:
+          - name: GIT_URL
+            value: $(tt.params.gitRepository)
+        workspaces:
+          - name: shared-space
+            persistentVolumeClaim:
+              claimName: app-pvc

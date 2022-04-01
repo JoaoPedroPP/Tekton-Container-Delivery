@@ -1,0 +1,76 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata: 
+  name: pipeline
+spec:
+  workspaces:
+    - name: shared-space
+  params:
+    - name: GIT_URL
+      type: string
+      description: Url of the repo
+      default: https://github.com/CodeRepOrg/test-repo.git
+    - name: GIT_BRANCH
+      type: string
+      description: Branch of the repo
+      default: main
+    - name: REGISTRY_URL
+      type: string
+      description: Url of the container registry
+      default: docker.io
+    - name: USER
+      type: string
+      description: Your container registry user
+      default: joaopedropp
+    - name: IMAGE_NAME
+      type: string
+      description: The name of your image
+      default: helloworld
+    - name: IMAGE_TAG
+      type: string
+      description: The tag of the image default value is latest
+      default: latest
+    - name: YAML_PATH
+      type: string
+      description: Path to yaml file
+      default: kubernetes/deployment.yaml
+  tasks:
+    - name: clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-space
+      params: 
+        - name: url
+          value: "$(params.GIT_URL)"
+        - name: revision
+          value: "$(params.GIT_BRANCH)"
+    - name: build
+      runAfter: 
+        - clone
+      taskRef:
+        name: build
+      workspaces:
+        - name: source
+          workspace: shared-space
+      params:
+        - name: IMAGE
+          value: $(params.USER)/$(params.IMAGE_NAME):$(params.IMAGE_TAG)
+    - name: deploy
+      runAfter: 
+        - build
+      taskRef:
+        name: deploy
+      workspaces:
+        - name: deploy
+          workspace: shared-space
+      params:
+        - name: pathToYamlFile
+          value: $(params.YAML_PATH)
+        - name: imageUrl
+          value: $(params.USER)/$(params.IMAGE_NAME)
+        - name: imageDigest
+          value: $(tasks.build.results.IMAGE_DIGEST)
+  # results:
+  #   - name: 
