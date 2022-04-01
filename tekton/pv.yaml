@@ -12,5 +12,5 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: /tmp/data/lv-1
+    path: /usr/app
   persistentVolumeReclaimPolicy: Recycle

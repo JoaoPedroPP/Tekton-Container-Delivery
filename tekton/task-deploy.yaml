@@ -24,8 +24,6 @@ spec:
         - "-i"
         - "-e"
         - "s;__IMAGE__;$(params.imageUrl):$(params.imageTag);g"
-        - "-e"
-        - "s;__DIGEST__;$(params.imageDigest);g"
         - "$(workspaces.deploy.path)/$(params.pathToYamlFile)"
     - name: run-kubectl
       image: lachlanevenson/k8s-kubectl

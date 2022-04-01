@@ -2,8 +2,10 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
   name: app-event-listener
+  labels:
+    app: el-app
 spec:
-  serviceAccountName: tekton-triggers-example-sa
+  serviceAccountName: tekton-triggers-sa
   triggers:
     - triggerRef: github-listener
   resources:
@@ -41,6 +43,8 @@ spec:
       value: $(body.repository.html_url)
     - name: commits
       value: $(body.commits)
+    - name: name
+      value: $(body.repository.name)
 ---
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
@@ -54,6 +58,8 @@ spec:
       description: The commits which got pushed
     - name: gitRepository
       description: The git repository that hosts context
+    - name: name
+      description: The git repository name
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -68,6 +74,8 @@ spec:
         params:
           - name: GIT_URL
             value: $(tt.params.gitRepository)
+          - name: IMAGE_NAME
+            value: $(tt.params.name)
         workspaces:
           - name: shared-space
             persistentVolumeClaim:

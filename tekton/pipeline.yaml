@@ -72,5 +72,3 @@ spec:
           value: $(params.USER)/$(params.IMAGE_NAME)
         - name: imageDigest
           value: $(tasks.build.results.IMAGE_DIGEST)
-  # results:
-  #   - name: 
