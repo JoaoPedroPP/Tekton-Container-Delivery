@@ -3,11 +3,9 @@
 Deploy your container imagem in simple way with tekton.
 
 1. Install tekton operator in your kubernetes cluster
-2. Run pv
-3. Run pvc
-4. Run secret
-5. tasks*
-6. pipeline
+2. Run `kubectl apply -f tekton/`
+
+obs: yaml file must have image: \_\_IMAGE__ (Improve readme)
 
 ## License
 
